@@ -1,6 +1,6 @@
 from src.algorithm.GeneAlgorithm import GeneAlgorithm
 
-import argparse
+import argparse, sys
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -12,5 +12,15 @@ if __name__ == '__main__':
     parser.add_argument('--mutation', default='inversion', type=str)
 
     args = parser.parse_args()
+
+    coMethod = ['onePoint']
+    muMethod = ['inversion']
+
+    if args.crossover not in coMethod:
+        print('Crossover method only for onePoint method')
+        sys.exit(0)
+    if args.mutation not in muMethod:
+        print('Mutation method only for inversion method')
+        sys.exit(0)
 
     GeneAlgorithm(args)
