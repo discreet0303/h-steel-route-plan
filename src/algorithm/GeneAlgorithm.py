@@ -76,6 +76,10 @@ class GeneAlgorithm():
                     self.mutation(muMethod, self.genePool[idx])
 
             # Valid
+            for gene in self.genePool:
+                print('start', gene.getChromosome())
+                self.validChromosome(gene)
+                print('end', gene.getChromosome())
 
             # Get Best Gene
             self.getBestGeneSingleProcessing(times)
@@ -84,6 +88,7 @@ class GeneAlgorithm():
         print("--- %s min ---" % runningTime)
 
         if self.bestGene != None:
+            bestChromosome = self.bestGene.getChromosome()
             dataToCsv = [
                 self.iteration,
                 self.bestIter,
@@ -93,8 +98,8 @@ class GeneAlgorithm():
                 coMethod,
                 self.matingRate,
                 muMethod,
-                self.mutationRate
-                # bestChromosome,
+                self.mutationRate,
+                bestChromosome,
             ]
             writeRecordToFile(dataToCsv)
 
@@ -142,6 +147,23 @@ class GeneAlgorithm():
         
         
         gene.setChromosome(chromosomeAfter)
+
+    def validChromosome(self, gene):
+        maxPanelNum = self.steelArgs['totalPanelNum']
+        validPanelId = [i for i in range(maxPanelNum)]
+        chromosome = copy.deepcopy(gene.getChromosome())
+
+        invalidIndex = []
+        for chromosomeIndex in range(maxPanelNum):
+            panelId = int(''.join(chromosome[7 * chromosomeIndex + 3: 7 * chromosomeIndex + 7]), 2)
+            if panelId not in validPanelId: invalidIndex.append(chromosomeIndex)
+            else: validPanelId.remove(panelId)
+
+        for chromosomeIndex in invalidIndex:
+            chromosome[7 * chromosomeIndex + 3: 7 * chromosomeIndex + 7] = [char for char in '{0:04b}'.format(validPanelId[0])]
+            validPanelId.remove(validPanelId[0])
+
+        gene.setChromosome(chromosome)
 
     """
     Gene Algorithm Init
