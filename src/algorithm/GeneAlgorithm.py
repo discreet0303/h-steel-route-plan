@@ -49,6 +49,20 @@ class GeneAlgorithm():
             print("Current fitness: ", self.mitFitness)
 
             # Reproduction
+            if times != 0:
+                genePoolTemp = []
+                while len(genePoolTemp) < self.genePoolSize:
+                    genePoolIndex = self.getRandomIndex(self.genePoolSize, 2)
+
+                    firstGene = self.genePool[genePoolIndex[0]] 
+                    secondGene = self.genePool[genePoolIndex[1]] 
+
+                    if firstGene.getFitness() <= secondGene.getFitness():
+                        genePoolTemp.append(firstGene)
+                    else:
+                        genePoolTemp.append(secondGene)
+
+                self.genePool = genePoolTemp
 
             # Crossover
             for idx in range(self.genePoolSize):
@@ -59,7 +73,7 @@ class GeneAlgorithm():
             # Mutation
             for idx in range(self.genePoolSize):
                 if random.random() < self.mutationRate:
-                    self.mutation(muMethod, self.genePoolSize[idx])
+                    self.mutation(muMethod, self.genePool[idx])
 
             # Valid
 
@@ -118,11 +132,7 @@ class GeneAlgorithm():
         geneB.setChromosome(chromosomeB_after)
 
     def mutation(self, method, gene):
-        mutationIndex = []
-        while len(mutationIndex) < 2:
-            randIndex = random.randint(0, self.geneLength - 1)
-            if randIndex not in mutationIndex: mutationIndex.append(randIndex)
-        mutationIndex.sort()
+        mutationIndex = self.getRandomIndex(self.geneLength, 2)
         
         chromosomeBefore = copy.deepcopy(gene.getChromosome())
         chromosomeAfter = copy.deepcopy(gene.getChromosome())
@@ -140,3 +150,12 @@ class GeneAlgorithm():
         # Each panel has 7 bits
         self.geneLength = self.steelArgs['totalPanelNum'] * 7
         self.genePool = [Gene(self.geneLength) for t in range(self.genePoolSize)]
+
+    def getRandomIndex(self, maxNum, total):
+        idx = []
+        while len(idx) < total:
+            randIndex = random.randint(0, maxNum - 1)
+            if randIndex not in idx: idx.append(randIndex)
+        idx.sort()
+
+        return idx

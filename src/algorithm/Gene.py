@@ -25,5 +25,5 @@ class Gene():
     def setFitness(self, fitness):
         self.fitness = fitness
     
-    def getFitness(self, fitness):
+    def getFitness(self):
         return self.fitness
