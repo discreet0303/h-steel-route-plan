@@ -27,16 +27,16 @@ class GeneAlgorithm():
             'totalPanelNum': 11
         }
 
-        # Fitness Config
-        self.Fitness = Fitness(self.steelArgs)
-
         # Init
         self.bestGene = None
         self.bestIter = 0
         self.initGeneAlgorithm()
 
         # Train
+        # Fitness Config
         testMode = False
+        self.Fitness = Fitness(self.steelArgs, testMode)
+
         if not testMode: self.train(args.crossover, args.mutation)
 
     """
@@ -77,9 +77,7 @@ class GeneAlgorithm():
 
             # Valid
             for gene in self.genePool:
-                print('start', gene.getChromosome())
                 self.validChromosome(gene)
-                print('end', gene.getChromosome())
 
             # Get Best Gene
             self.getBestGeneSingleProcessing(times)
@@ -116,22 +114,39 @@ class GeneAlgorithm():
     crossover, mutation, valid
     """
     def crossover(self, method, geneA, geneB):
-        crossoverIndex = []
-        if method == 'onePoint':
-            while len(crossoverIndex) < 2:
-                randIndex = random.randint(0, self.geneLength - 1)
-                if randIndex not in crossoverIndex: crossoverIndex.append(randIndex)
-        crossoverIndex.sort()
-
         chromosomeA_before = copy.deepcopy(geneA.getChromosome())
         chromosomeA_after = copy.deepcopy(geneA.getChromosome())
         chromosomeB_before = copy.deepcopy(geneB.getChromosome())
         chromosomeB_after = copy.deepcopy(geneB.getChromosome())
 
+        crossoverIndex = []
+        if method == 'onePoint' or method == 'twoPoint':
+            crossoverIndex = self.getRandomIndex(self.geneLength - 1, 2)
+        elif method == 'byPanel':
+            crossoverIndex = self.getRandomIndex(self.steelArgs['totalPanelNum'] - 1, 1)
+        crossoverIndex.sort()
+
+
         if method == 'onePoint':
             for changeIndex in crossoverIndex:
                 chromosomeA_after[changeIndex] = chromosomeB_before[changeIndex]
                 chromosomeB_after[changeIndex] = chromosomeA_before[changeIndex]
+
+        if method == 'twoPoint':
+            chromosomeA_after[crossoverIndex[0]: crossoverIndex[1]] = chromosomeB_before[crossoverIndex[0]: crossoverIndex[1]]
+            chromosomeB_after[crossoverIndex[0]: crossoverIndex[1]] = chromosomeA_before[crossoverIndex[0]: crossoverIndex[1]]
+
+        if method == 'byPanel':
+            item = random.randint(0, 1)
+            aStartIndex = 7 * crossoverIndex[0]
+            if item == 0:
+                # paint method
+                chromosomeA_after[aStartIndex: aStartIndex + 3] = chromosomeB_before[aStartIndex: aStartIndex + 3]
+                chromosomeB_after[aStartIndex: aStartIndex + 3] = chromosomeA_before[aStartIndex: aStartIndex + 3]
+            elif item == 1:
+                # Panel method
+                chromosomeA_after[aStartIndex + 3: aStartIndex + 7] = chromosomeB_before[aStartIndex + 3: aStartIndex + 7]
+                chromosomeB_after[aStartIndex + 3: aStartIndex + 7] = chromosomeA_before[aStartIndex + 3: aStartIndex + 7]
 
         geneA.setChromosome(chromosomeA_after)
         geneB.setChromosome(chromosomeB_after)
@@ -145,6 +160,9 @@ class GeneAlgorithm():
         if method == 'inversion':
             chromosomeAfter[mutationIndex[0]:mutationIndex[1]] = chromosomeBefore[mutationIndex[0]:mutationIndex[1]][::-1]
         
+        if method == 'swap':
+            chromosomeAfter[mutationIndex[0]] = chromosomeBefore[mutationIndex[1]]
+            chromosomeAfter[mutationIndex[1]] = chromosomeBefore[mutationIndex[0]]
         
         gene.setChromosome(chromosomeAfter)
 

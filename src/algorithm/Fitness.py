@@ -1,13 +1,25 @@
 from src.model.HSteelModel import HSteelModel
+from src.algorithm.Gene import Gene
 
 import math, copy
 
 class Fitness():
-    def __init__(self, steelArgs):
+    def __init__(self, steelArgs, testMode):
         self.steelArgs = steelArgs
 
         # H-Steel Model
         self.steelModel = HSteelModel(self.steelArgs)
+
+        # Test
+        if testMode:
+            print('Test Mode')
+            ch = ['1', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '1', '1', '0', '1', '0', '1', '1', '0', '1', '0', '1', '0', '1', '0', '0', '0', '1', '1', '1', '1', '0', '1', '1', '1', '0', '0', '0', '1', '0', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '1', '0', '1']
+            gene = Gene(self.steelArgs['totalPanelNum'] * 7)
+            gene.setChromosome(ch)
+            tran = self.tranformChromosome(ch)
+            fit = self.fitness(gene)
+            print('Fit: ', fit)
+            print('Tran: ', tran)
 
     def fitness(self, gene):
         chromosome = copy.deepcopy(gene.getChromosome())
