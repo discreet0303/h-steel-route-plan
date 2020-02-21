@@ -1,92 +1,84 @@
 class HSteelModel():
-    def __init__(self):
-        self.steelHeight = 100
-        self.steelwidth = 50
-        self.steelCThick = 10
-        self.steelTBThick = 10
-        self.steelRadio = 8
-        self.steelLength = 1000
-        self.paintHalfLineLength = 5
+    def __init__(self, steelArgs):
+        self.steelHeight = steelArgs['steelHeight']
+        self.steelwidth = steelArgs['steelwidth']
+        self.steelCThick = steelArgs['steelCThick']
+        self.steelTBThick = steelArgs['steelTBThick']
+        self.steelRadio = steelArgs['steelRadio']
+        self.steelLength = steelArgs['steelLength']
+        self.paintHalfLineLength = steelArgs['paintHalfLineLength']
+        self.totalPanelNum = steelArgs['totalPanelNum']
 
         self.hSteelInit()
 
-    def hSteelInit(self):
-        self.allPanelInfo = [
-            {'panelIndex': 0 ,'panelName': 'bottom-right', 'height': self.steelwidth / 2, 'width': self.steelTBThick},
-            {'panelIndex': 1 ,'panelName': 'bottom-front', 'height': self.steelTBThick, 'width': self.steelLength},
-            {'panelIndex': 2 ,'panelName': 'bottom-left', 'height': self.steelwidth / 2, 'width': self.steelTBThick},
-            {'panelIndex': 3 ,'panelName': 'bottom-top', 'height': (self.steelwidth - self.steelCThick) / 2, 'width': self.steelLength},
-            {'panelIndex': 4 ,'panelName': 'center-front', 'height': (self.steelHeight - 2 * self.steelTBThick), 'width': self.steelLength},
-            {'panelIndex': 5 ,'panelName': 'center-left', 'height': (self.steelHeight - 2 * self.steelTBThick), 'width': self.steelCThick},
-            {'panelIndex': 6 ,'panelName': 'top-right', 'height': self.steelwidth / 2, 'width': self.steelTBThick},
-            {'panelIndex': 7 ,'panelName': 'top-front', 'height': self.steelTBThick, 'width': self.steelLength},
-            {'panelIndex': 8 ,'panelName': 'top-left', 'height': self.steelwidth / 2, 'width': self.steelTBThick},
-            {'panelIndex': 9 ,'panelName': 'top-top', 'height': (self.steelwidth - self.steelCThick) / 2, 'width': self.steelLength},
-            {'panelIndex': 10 ,'panelName': 'top-bottom', 'height': (self.steelwidth - self.steelCThick) / 2, 'width': self.steelLength},
-        ]
+    def paintPoint(self, hsteelSide, panelId, paintStartPoint):
+        paintStartPoint2d, paintEndPoint2d = self.paintIn2d(panelId, paintStartPoint)
+        paintStartPoint3d = self.point2dTo3d(hsteelSide, panelId, paintStartPoint2d)
+        paintEndPoint3d = self.point2dTo3d(hsteelSide, panelId, paintEndPoint2d)
+        return paintStartPoint3d, paintEndPoint3d
 
-        self.index2PanelNames = [panel['panelName'] for panel in self.allPanelInfo]
+    def point2dTo3d(self, hsteelSide, panelId, point):
+        panelName = self.panelIdToPanelName(panelId)
+        tranPoint = []
 
-    """
-    All Panel Detail
-    """
-    def getAllPaintInfo(self, panelName):
-        panelIndex = self.findIndexInDictValue(self.allPanelInfo, 'panelName', panelName)
+        if hsteelSide == 'left':
+            if panelName == 'bottom-right': tranPoint = [
+                point['y'],
+                0,
+                self.steelTBThick - point['x']
+            ]
+            elif panelName == 'bottom-front': tranPoint = [
+                0,
+                self.steelLength - point['x'],
+                point['y']
+            ]
+            elif panelName == 'bottom-left': tranPoint = [
+                point['y'],
+                self.steelLength,
+                point['x']
+            ]
+            elif panelName == 'bottom-top': tranPoint = [
+                point['y'],
+                self.steelLength - point['x'],
+                self.steelTBThick
+            ]
+            elif panelName == 'center-front': tranPoint = [
+                (self.steelwidth - self.steelCThick) / 2,
+                self.steelLength - point['x'],
+                self.steelTBThick + point['y']
+            ]
+            elif panelName == 'center-left': tranPoint = [
+                (self.steelwidth - self.steelCThick) / 2 + self.steelTBThick - point['x'],
+                self.steelLength,
+                self.steelTBThick + point['y']
+            ]
+            elif panelName == 'top-right': tranPoint = [
+                point['y'],
+                0,
+                self.steelHeight - point['x']
+            ]
+            elif panelName == 'top-front': tranPoint = [
+                0,
+                self.steelLength - point['x'],
+                self.steelHeight - point['y']
+            ]
+            elif panelName == 'top-left': tranPoint = [
+                point['y'],
+                self.steelLength,
+                self.steelHeight - self.steelTBThick + point['x']
+            ]
+            elif panelName == 'top-top': tranPoint = [
+                point['y'],
+                self.steelLength - point['x'],
+                self.steelHeight
+            ]
+            elif panelName == 'top-bottom': tranPoint = [
+                (self.steelwidth - self.steelCThick) / 2 - point['y'],
+                self.steelLength - point['x'],
+                self.steelHeight - self.steelTBThick
+            ]
 
-        if panelName == 'all': return self.allPanelInfo
-        elif panelIndex == -1: return None
-        else: return self.allPanelInfo[panelIndex]
-
-    def getPanelStartEndPoint(self, panelName, paintHalfLineLength, paintMode, steelSide):
-        panelIndex = self.findIndexInDictValue(self.allPanelInfo, 'panelName', panelName)
-
-        if panelIndex == -1: return None
-
-        panelInfo = self.allPanelInfo[panelIndex]
-        panelStartPoint, panelEndPoint =  self.calcuPaintStartAndEndPoint(
-            panelInfo['height'],
-            panelInfo['width'],
-            paintHalfLineLength,
-            paintMode
-        )
-
-        if steelSide == 'left':
-            if panelName == 'bottom-right':
-                paintStartPoint = [panelStartPoint['height'], 0, self.steelTBThick - panelStartPoint['width']]
-                paintEndPoint = [panelEndPoint['height'], 0, self.steelTBThick - panelEndPoint['width']]
-            elif panelName == 'bottom-front':
-                paintStartPoint = [0, self.steelLength - panelStartPoint['width'], panelStartPoint['height']]
-                paintEndPoint = [0, self.steelLength - panelEndPoint['width'], panelEndPoint['height']]
-            elif panelName == 'bottom-left':
-                paintStartPoint = [panelStartPoint['height'], self.steelLength, panelStartPoint['width']]
-                paintEndPoint = [panelEndPoint['height'], self.steelLength, panelEndPoint['width']]
-            elif panelName == 'bottom-top':
-                paintStartPoint = [panelStartPoint['height'], self.steelLength - panelStartPoint['width'], 0]
-                paintEndPoint = [panelEndPoint['height'], self.steelLength - panelEndPoint['width'], 0]
-            elif panelName == 'center-front':
-                paintStartPoint = [(self.steelwidth - self.steelCThick) / 2, panelStartPoint['width'], panelStartPoint['height']]
-                paintEndPoint = [(self.steelwidth - self.steelCThick) / 2, panelEndPoint['width'], panelEndPoint['height']]
-            elif panelName == 'center-left':
-                originInit = (self.steelwidth - self.steelCThick) / 2 + self.steelCThick 
-                paintStartPoint = [originInit - panelStartPoint['width'], self.steelLength, self.steelTBThick + panelStartPoint['height']]
-                paintEndPoint = [originInit - panelEndPoint['width'], self.steelLength, self.steelTBThick + panelEndPoint['height']]
-            elif panelName == 'top-right':
-                paintStartPoint = [panelStartPoint['height'], 0, self.steelHeight - panelStartPoint['width']]
-                paintEndPoint = [panelEndPoint['height'], 0, self.steelHeight - panelEndPoint['width']]
-            elif panelName == 'top-front':
-                paintStartPoint = [0, self.steelLength - panelStartPoint['width'], self.steelHeight - self.steelTBThick + panelStartPoint['height']]
-                paintEndPoint = [0, self.steelLength - panelEndPoint['width'], self.steelHeight - self.steelTBThick + panelEndPoint['height']]
-            elif panelName == 'top-left':
-                paintStartPoint = [panelStartPoint['height'], 0, self.steelHeight - self.steelTBThick + panelStartPoint['width']]
-                paintEndPoint = [panelEndPoint['height'], 0, self.steelHeight - self.steelTBThick + panelEndPoint['width']]
-            elif panelName == 'top-top':
-                paintStartPoint = [panelStartPoint['height'], self.steelLength - panelStartPoint['width'], self.steelHeight]
-                paintEndPoint = [panelEndPoint['height'], self.steelLength - panelEndPoint['width'], self.steelHeight]
-            elif panelName == 'top-bottom':
-                paintStartPoint = [panelStartPoint['height'], self.steelLength - panelStartPoint['width'], self.steelHeight - self.steelTBThick]
-                paintEndPoint = [panelEndPoint['height'], self.steelLength - panelEndPoint['width'], self.steelHeight - self.steelTBThick]
-
-        return paintStartPoint, paintEndPoint
+        return tranPoint
 
     """ 
     Paint Mode
@@ -108,109 +100,179 @@ class HSteelModel():
     1                       6
     --0---------8---------7--
     """
-    def calcuPaintStartAndEndPoint(self, height, width, halfLineLength, paintMode):
-
+    def paintIn2d(self, panelId, paintStartId):
+        panelInfo = self.allPanelDetail[panelId]
+        height = panelInfo['height']
+        width = panelInfo['width']
+        
         possiblePoint = [
             # 0
-            {'width': halfLineLength, 'height': 0},
-            {'width': 0, 'height': halfLineLength},
-            {'width': 0, 'height': height - halfLineLength},
-            {'width': halfLineLength, 'height': height},
-            {'width': width - halfLineLength, 'height': height},
-            {'width': width, 'height': height - halfLineLength},
-            {'width': width, 'height': halfLineLength},
-            {'width': width - halfLineLength, 'height': 0},
+            {'x': self.paintHalfLineLength, 'y': 0},
+            {'x': 0, 'y': self.paintHalfLineLength},
+            {'x': 0, 'y': height - self.paintHalfLineLength},
+            {'x': self.paintHalfLineLength, 'y': height},
+            {'x': width - self.paintHalfLineLength, 'y': height},
+            {'x': width, 'y': height - self.paintHalfLineLength},
+            {'x': width, 'y': self.paintHalfLineLength},
+            {'x': width - self.paintHalfLineLength, 'y': 0},
             # 8
-            {'width': width / 2, 'height': 0},
-            {'width': 0, 'height': height / 2},
-            {'width': width / 2, 'height': height},
-            {'width': width, 'height': height / 2},
+            {'x': width / 2, 'y': 0},
+            {'x': 0, 'y': height / 2},
+            {'x': width / 2, 'y': height},
+            {'x': width, 'y': height / 2},
         ]
 
-        if paintMode == 0:
-            if width <= 2 * halfLineLength:
-                startPoint = possiblePoint[10]
-                endPoint = possiblePoint[8]
+        startPointIndex = None
+        endPointIndex = None
+
+        if paintStartId == 0:
+            if width <= 2 * self.paintHalfLineLength:
+                startPointIndex = 10
+                endPointIndex = 8
             else:
-                startPoint = possiblePoint[3]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[4]
-                else: endPoint = possiblePoint[7]
-        elif paintMode == 1:
-            if width <= 2 * halfLineLength:
-                startPoint = possiblePoint[10]
-                endPoint = possiblePoint[8]
+                startPointIndex = 3
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 4
+                else: endPointIndex = 7
+        elif paintStartId == 1:
+            if width <= 2 * self.paintHalfLineLength:
+                startPointIndex = 10
+                endPointIndex = 8
             else:
-                startPoint = possiblePoint[4]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[3]
-                else: endPoint = possiblePoint[0]
-        elif paintMode == 2:
-            if width <= 2 * halfLineLength:
-                startPoint = possiblePoint[8]
-                endPoint = possiblePoint[10]
+                startPointIndex = 4
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 3
+                else: endPointIndex = 0
+        elif paintStartId == 2:
+            if width <= 2 * self.paintHalfLineLength:
+                startPointIndex = 8
+                endPointIndex = 10
             else:
-                startPoint = possiblePoint[0]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[7]
-                else: endPoint = possiblePoint[4]
-        elif paintMode == 3:
-            if width <= 2 * halfLineLength:
-                startPoint = possiblePoint[8]
-                endPoint = possiblePoint[10]
+                startPointIndex = 0
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 7
+                else: endPointIndex = 4
+        elif paintStartId == 3:
+            if width <= 2 * self.paintHalfLineLength:
+                startPointIndex = 8
+                endPointIndex = 10
             else:
-                startPoint = possiblePoint[7]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[0]
-                else: endPoint = possiblePoint[3]
-        elif paintMode == 4:
-            if height <= 2 * halfLineLength:
-                startPoint = possiblePoint[9]
-                endPoint = possiblePoint[11]
+                startPointIndex = 7
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 0
+                else: endPointIndex = 3
+        elif paintStartId == 4:
+            if height <= 2 * self.paintHalfLineLength:
+                startPointIndex = 9
+                endPointIndex = 11
             else:
-                startPoint = possiblePoint[2]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[1]
-                else: endPoint = possiblePoint[6]
-        elif paintMode == 5:
-            if height <= 2 * halfLineLength:
-                startPoint = possiblePoint[9]
-                endPoint = possiblePoint[11]
+                startPointIndex = 2
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 1
+                else: endPointIndex = 6
+        elif paintStartId == 5:
+            if height <= 2 * self.paintHalfLineLength:
+                startPointIndex = 9
+                endPointIndex = 11
             else:
-                startPoint = possiblePoint[5]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[6]
-                else: endPoint = possiblePoint[1]
-        elif paintMode == 6:
-            if height <= 2 * halfLineLength:
-                startPoint = possiblePoint[11]
-                endPoint = possiblePoint[9]
+                startPointIndex = 5
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 6
+                else: endPointIndex = 1
+        elif paintStartId == 6:
+            if height <= 2 * self.paintHalfLineLength:
+                startPointIndex = 11
+                endPointIndex = 9
             else:
-                startPoint = possiblePoint[1]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[2]
-                else: endPoint = possiblePoint[5]
-        elif paintMode == 7:
-            if height <= 2 * halfLineLength:
-                startPoint = possiblePoint[11]
-                endPoint = possiblePoint[9]
+                startPointIndex = 1
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 2
+                else: endPointIndex = 5
+        elif paintStartId == 7:
+            if height <= 2 * self.paintHalfLineLength:
+                startPointIndex = 11
+                endPointIndex = 9
             else:
-                startPoint = possiblePoint[6]
-                paintRoundNum = int(width / 2 / halfLineLength) + 1
-                if paintRoundNum % 2 == 0: endPoint = possiblePoint[5]
-                else: endPoint = possiblePoint[2]
-        else:
-            startPoint = None
-            endPoint = None
+                startPointIndex = 6
+                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                if paintRoundNum % 2 == 0: endPointIndex = 5
+                else: endPointIndex = 2
+
+        return possiblePoint[startPointIndex], possiblePoint[endPointIndex]
+
+    def panelIdToPanelName(self, panelId):
+        panel = {
+            0: 'bottom-right',
+            1: 'bottom-front',
+            2: 'bottom-left',
+            3: 'bottom-top',
+            4: 'center-front',
+            5: 'center-left',
+            6: 'top-right',
+            7: 'top-front',
+            8: 'top-left',
+            9: 'top-top',
+            10: 'top-bottom',
+            # 11: 'center-right',
+        }
+
+        return panel[panelId]
+
+    def hSteelInit(self):
+        self.allPanelDetail = [{} for t in range(self.totalPanelNum)]
         
-        return startPoint, endPoint
-
-    def getIndex2PanelNames(self):
-        return self.index2PanelNames
-
-
-    def findIndexInDictValue(self, lst, key, value):
-        for i, dic in enumerate(lst):
-            if dic[key] == value:
-                return i
-        return -1
+        self.allPanelDetail[0] = {
+            'panelName': 'bottom-right',
+            'height': self.steelwidth / 2,
+            'width': self.steelTBThick
+        }
+        self.allPanelDetail[1] = {
+            'panelName': 'bottom-front',
+            'height': self.steelTBThick,
+            'width': self.steelLength
+        }
+        self.allPanelDetail[2] = {
+            'panelName': 'bottom-left',
+            'height': self.steelwidth / 2,
+            'width': self.steelTBThick
+        }
+        self.allPanelDetail[3] = {
+            'panelName': 'bottom-top',
+            'height': (self.steelwidth - self.steelCThick) / 2,
+            'width': self.steelLength
+        }
+        self.allPanelDetail[4] = {
+            'panelName': 'center-front',
+            'height': self.steelHeight - 2 * self.steelTBThick,
+            'width': self.steelLength
+        }
+        self.allPanelDetail[5] = {
+            'panelName': 'center-left',
+            'height': self.steelHeight - 2 * self.steelTBThick,
+            'width': self.steelCThick
+        }
+        self.allPanelDetail[6] = {
+            'panelName': 'top-right',
+            'height': self.steelwidth / 2,
+            'width': self.steelTBThick
+        }
+        self.allPanelDetail[7] = {
+            'panelName': 'top-front',
+            'height': self.steelTBThick,
+            'width': self.steelLength
+        }
+        self.allPanelDetail[8] = {
+            'panelName': 'top-left',
+            'height': self.steelwidth / 2,
+            'width': self.steelTBThick
+        }
+        self.allPanelDetail[9] = {
+            'panelName': 'top-top',
+            'height': self.steelwidth / 2,
+            'width': self.steelLength
+        }
+        self.allPanelDetail[10] = {
+            'panelName': 'top-bottom',
+            'height': (self.steelwidth - self.steelCThick) / 2,
+            'width': self.steelLength
+        }

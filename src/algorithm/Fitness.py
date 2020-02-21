@@ -1,43 +1,52 @@
 from src.model.HSteelModel import HSteelModel
+from src.algorithm.Gene import Gene
 
 import math, copy
 
 class Fitness():
-    def __init__(self):
-        self.steelHeight = 100
-        self.steelWidth = 50
-        self.paintHalfLineLength = 5
+    def __init__(self, steelArgs, testMode):
+        self.steelArgs = steelArgs
 
         # H-Steel Model
-        self.steelModel = HSteelModel()
-        self.allPanelNameByIndex = self.steelModel.getIndex2PanelNames()
+        self.steelModel = HSteelModel(self.steelArgs)
 
-        # for i in range(8):
-        #     panelName = self.allPanelNameByIndex[i]
-        #     sP, eP = self.steelModel.getPanelStartEndPoint(panelName, 5, 0)
-        #     print('startPoint: ', sP, 'endPoint', eP)
-            
+        # Test
+        if testMode:
+            print('Test Mode')
+            ch = ['1', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '1', '1', '0', '1', '0', '1', '1', '0', '1', '0', '1', '0', '1', '0', '0', '0', '1', '1', '1', '1', '0', '1', '1', '1', '0', '0', '0', '1', '0', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '1', '0', '1']
+            gene = Gene(self.steelArgs['totalPanelNum'] * 7)
+            gene.setChromosome(ch)
+            tran = self.tranformChromosome(ch)
+            fit = self.fitness(gene)
+            print('Fit: ', fit)
+            print('Tran: ', tran)
+
     def fitness(self, gene):
         chromosome = copy.deepcopy(gene.getChromosome())
-        chromosomeResult = self.tranformBinaryToPaintInfo(chromosome)
+        tranChromosome = self.tranformChromosome(chromosome)
 
-        panelLinePoint = []
-        for panel in chromosomeResult:
-            paintMode = panel[0]
-            panelId = panel[1]
-            panelName = self.allPanelNameByIndex[panelId]
-            paintStartPoint, paintEndPoint = self.steelModel.getPanelStartEndPoint(panelName, self.paintHalfLineLength, 0, 'left')
-            print(panel)
-            print(paintStartPoint, paintEndPoint)
+        res = []
+        for panelInfo in tranChromosome:
+            paintStartId = panelInfo[0]
+            panelId = panelInfo[1]
+            paintStartPoint3d, paintEndPoint3d = self.steelModel.paintPoint('left', panelId, paintStartId)
+            res.append([paintStartPoint3d, paintEndPoint3d])
 
-    def tranformBinaryToPaintInfo(self, chromosome):
+        distanceFitness = 0
+        for idx, paintPoints in enumerate(res):
+            if idx < len(res) - 1:
+                distanceFitness += self.get3dPointDistance(res[idx][1], res[idx + 1][0])
+
+        return distanceFitness
+
+    def tranformChromosome(self, chromosome):
         panelInfo = [
             [self.binaryToInt(''.join(chromosome[7 * panelIdx: 7 * panelIdx + 3])), self.binaryToInt(''.join(chromosome[7 * panelIdx + 3: 7 * panelIdx + 7]))] 
-            for panelIdx in range(11)
+            for panelIdx in range(self.steelArgs['totalPanelNum'])
         ]
         return panelInfo
 
-    def getTwoPointDistance(self, point1, point2):
+    def get3dPointDistance(self, point1, point2):
         return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
 
     def binaryToInt(self, binary):
