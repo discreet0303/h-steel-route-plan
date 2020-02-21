@@ -2,6 +2,11 @@ from src.algorithm.GeneAlgorithm import GeneAlgorithm
 
 import argparse, sys
 
+def main(args):
+    for i in range(args.running):
+        GeneAlgorithm(args)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--iteration', '-i', default=200, type=int)
@@ -10,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--mutationrate', default=0.4, type=float)
     parser.add_argument('--crossover', default='byPanel', type=str)
     parser.add_argument('--mutation', default='inversion', type=str)
+    parser.add_argument('--running', '-n', default='50', type=int)
 
     args = parser.parse_args()
 
@@ -23,4 +29,4 @@ if __name__ == '__main__':
         print('Mutation method only for inversion method')
         sys.exit(0)
 
-    GeneAlgorithm(args)
+    main(args)

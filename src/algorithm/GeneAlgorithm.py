@@ -100,6 +100,8 @@ class GeneAlgorithm():
                 bestChromosome,
             ]
             writeRecordToFile(dataToCsv)
+            print('The Best Chromosome: ', bestChromosome)
+            print('The Fit: ', self.Fitness.tranformChromosome(bestChromosome))
 
     def getBestGeneSingleProcessing(self, iterNum):
         for gene in self.genePool:
