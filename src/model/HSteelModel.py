@@ -125,13 +125,16 @@ class HSteelModel():
         startPointIndex = None
         endPointIndex = None
 
+        heightPaintRoundNum = height / (2 * self.paintHalfLineLength)
+        widthPaintRoundNum = width / (2 * self.paintHalfLineLength)
+
         if paintStartId == 0:
             if width <= 2 * self.paintHalfLineLength:
                 startPointIndex = 10
                 endPointIndex = 8
             else:
                 startPointIndex = 3
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(widthPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 4
                 else: endPointIndex = 7
         elif paintStartId == 1:
@@ -140,7 +143,7 @@ class HSteelModel():
                 endPointIndex = 8
             else:
                 startPointIndex = 4
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(widthPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 3
                 else: endPointIndex = 0
         elif paintStartId == 2:
@@ -149,7 +152,7 @@ class HSteelModel():
                 endPointIndex = 10
             else:
                 startPointIndex = 0
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(widthPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 7
                 else: endPointIndex = 4
         elif paintStartId == 3:
@@ -158,7 +161,7 @@ class HSteelModel():
                 endPointIndex = 10
             else:
                 startPointIndex = 7
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(widthPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 0
                 else: endPointIndex = 3
         elif paintStartId == 4:
@@ -167,7 +170,7 @@ class HSteelModel():
                 endPointIndex = 11
             else:
                 startPointIndex = 2
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(heightPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 1
                 else: endPointIndex = 6
         elif paintStartId == 5:
@@ -176,7 +179,7 @@ class HSteelModel():
                 endPointIndex = 11
             else:
                 startPointIndex = 5
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(heightPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 6
                 else: endPointIndex = 1
         elif paintStartId == 6:
@@ -185,7 +188,7 @@ class HSteelModel():
                 endPointIndex = 9
             else:
                 startPointIndex = 1
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(heightPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 2
                 else: endPointIndex = 5
         elif paintStartId == 7:
@@ -194,7 +197,7 @@ class HSteelModel():
                 endPointIndex = 9
             else:
                 startPointIndex = 6
-                paintRoundNum = int(width / 2 / self.paintHalfLineLength) + 1
+                paintRoundNum = int(heightPaintRoundNum)
                 if paintRoundNum % 2 == 0: endPointIndex = 5
                 else: endPointIndex = 2
 
