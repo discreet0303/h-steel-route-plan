@@ -11,7 +11,7 @@ class GeneAlgorithm():
         self.geneLength = None
         self.genePoolSize = args.genesize
         self.genePool = []
-        self.mitFitness = 100000
+        self.minFitness = 100000
         self.matingRate = args.matingrate
         self.mutationRate = args.mutationrate
 
@@ -43,10 +43,11 @@ class GeneAlgorithm():
     Gene Algorithm Train
     """
     def train(self, coMethod, muMethod):
+        fitnessRecord = []
         start_time = time.time()
         for times in range(self.iteration):
             print('Train Time: ', times)
-            print("Current fitness: ", self.mitFitness)
+            print("Current fitness: ", self.minFitness)
 
             # Reproduction
             if times != 0:
@@ -81,6 +82,7 @@ class GeneAlgorithm():
 
             # Get Best Gene
             self.getBestGeneSingleProcessing(times)
+            if self.minFitness not in fitnessRecord: fitnessRecord.append(self.minFitness)
 
         runningTime = ((time.time() - start_time) / 60)
         print("--- %s min ---" % runningTime)
@@ -91,13 +93,15 @@ class GeneAlgorithm():
                 self.iteration,
                 self.bestIter,
                 runningTime,
-                self.mitFitness,
+                self.minFitness,
                 self.genePoolSize,
                 coMethod,
                 self.matingRate,
                 muMethod,
                 self.mutationRate,
+                self.Fitness.tranformChromosome(bestChromosome),
                 bestChromosome,
+				fitnessRecord
             ]
             writeRecordToFile(dataToCsv)
             print('The Best Chromosome: ', bestChromosome)
@@ -107,8 +111,8 @@ class GeneAlgorithm():
         for gene in self.genePool:
             fit = self.Fitness.fitness(gene)
             gene.setFitness(fit)
-            if fit < self.mitFitness:
-                self.mitFitness = fit
+            if fit < self.minFitness:
+                self.minFitness = fit
                 self.bestGene = copy.deepcopy(gene)
                 self.bestIter = iterNum
 
@@ -142,7 +146,7 @@ class GeneAlgorithm():
             item = random.randint(0, 1)
             aStartIndex = 7 * crossoverIndex[0]
             if item == 0:
-                # paint method
+                # Paint method
                 chromosomeA_after[aStartIndex: aStartIndex + 3] = chromosomeB_before[aStartIndex: aStartIndex + 3]
                 chromosomeB_after[aStartIndex: aStartIndex + 3] = chromosomeA_before[aStartIndex: aStartIndex + 3]
             elif item == 1:
@@ -165,6 +169,16 @@ class GeneAlgorithm():
         if method == 'swap':
             chromosomeAfter[mutationIndex[0]] = chromosomeBefore[mutationIndex[1]]
             chromosomeAfter[mutationIndex[1]] = chromosomeBefore[mutationIndex[0]]
+
+        if method == 'byPanel':
+            item = random.randint(0, 1)
+            changeIndex = random.randint(0, self.steelArgs['totalPanelNum'] - 1) * 7
+            if item == 0:
+                # Paint method
+                chromosomeAfter[changeIndex: changeIndex + 3] = [char for char in '{0:03b}'.format(random.randint(0, 7))]
+            elif item == 1:
+                # Panel method
+                chromosomeAfter[changeIndex + 3: changeIndex + 7] = [char for char in '{0:04b}'.format(random.randint(0, self.steelArgs['totalPanelNum'] - 1))]
         
         gene.setChromosome(chromosomeAfter)
 

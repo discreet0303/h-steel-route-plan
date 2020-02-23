@@ -16,6 +16,10 @@ class Gene():
     def randomInit(self):
         self.chromosome = [str(random.randint(0, 1)) for t in range(self.geneLength)]
 
+        # panelOrder = [0, 1, 2, 3, 4, 10, 7, 6, 9, 8, 5]
+        # for i in range(len(panelOrder)):
+        #     self.chromosome[i * 7 + 3: i * 7 + 7] = [char for char in '{0:04b}'.format(panelOrder[i])]
+
     def setChromosome(self, chromosome):
         self.chromosome = chromosome
 

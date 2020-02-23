@@ -13,7 +13,13 @@ class Fitness():
         # Test
         if testMode:
             print('Test Mode')
-            ch = ['1', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '1', '1', '0', '1', '0', '1', '1', '0', '1', '0', '1', '0', '1', '0', '0', '0', '1', '1', '1', '1', '0', '1', '1', '1', '0', '0', '0', '1', '0', '0', '1', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '0', '0', '1', '0', '1', '0', '1', '0', '1']
+            # [[7, 0], [7, 1], [0, 2], [4, 3], [7, 6], [7, 7], [0, 5], [6, 8], [4, 9], [7, 4], [5, 10]]
+            ch = [
+                '1', '0', '0', '0', '0', '0', '0', 
+                '0', '0', '1', '0', '0', '0', '1', 
+                '1', '1', '0', '0', '0', '1', '1', 
+                '0', '1', '1', '0', '0', '1', '0', 
+                '1', '1', '0', '0', '1', '0', '0', '1', '0', '1', '1', '0', '1', '0', '1', '0', '1', '0', '1', '1', '1', '1', '1', '1', '0', '1', '1', '0', '1', '0', '1', '1', '0', '0', '1', '0', '1', '0', '1', '0', '0', '0', '0', '0', '0', '0', '1', '0', '1']
             gene = Gene(self.steelArgs['totalPanelNum'] * 7)
             gene.setChromosome(ch)
             tran = self.tranformChromosome(ch)
@@ -34,8 +40,9 @@ class Fitness():
 
         distanceFitness = 0
         for idx, paintPoints in enumerate(res):
-            if idx < len(res) - 1:
-                distanceFitness += self.get3dPointDistance(res[idx][1], res[idx + 1][0])
+            if idx == 0: distanceFitness += self.get3dPointDistance([0, 0, 0], res[idx][0])
+            if idx < len(res) - 1: distanceFitness += self.get3dPointDistance(res[idx][1], res[idx + 1][0])
+            # print('idx: ', idx, 'distanceFitness: ', distanceFitness)
 
         return distanceFitness
 
