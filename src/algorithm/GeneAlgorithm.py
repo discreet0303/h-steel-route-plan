@@ -24,7 +24,7 @@ class GeneAlgorithm():
             'steelTBThick': 10,
             'steelRadio': 8,
             'steelLength': 1000,
-            'paintHalfLineLength': 5,
+            'paintHalfLineLength': 2.5,
             'totalPanelNum': 11
         }
         self.HSteelModel = HSteelModel(self.steelArgs)
@@ -51,22 +51,22 @@ class GeneAlgorithm():
             print('Train Time: ', times)
             print("Current fitness: ", self.minFitness)
 
-            # Reproduction
-            if times != 0:
-                genePoolTemp = []
-                if self.bestGene != None: genePoolTemp.append(self.bestGene) 
-                while len(genePoolTemp) < self.genePoolSize:
-                    genePoolIndex = self.getRandomIndex(self.genePoolSize, 2)
+            # # Reproduction
+            # if times != 0:
+            #     genePoolTemp = []
+            #     if self.bestGene != None: genePoolTemp.append(self.bestGene) 
+            #     while len(genePoolTemp) < self.genePoolSize:
+            #         genePoolIndex = self.getRandomIndex(self.genePoolSize, 2)
 
-                    firstGene = self.genePool[genePoolIndex[0]] 
-                    secondGene = self.genePool[genePoolIndex[1]] 
+            #         firstGene = self.genePool[genePoolIndex[0]] 
+            #         secondGene = self.genePool[genePoolIndex[1]] 
 
-                    if firstGene.getFitness() <= secondGene.getFitness():
-                        genePoolTemp.append(firstGene)
-                    else:
-                        genePoolTemp.append(secondGene)
+            #         if firstGene.getFitness() <= secondGene.getFitness():
+            #             genePoolTemp.append(firstGene)
+            #         else:
+            #             genePoolTemp.append(secondGene)
 
-                self.genePool = genePoolTemp
+            #     self.genePool = genePoolTemp
 
             # Crossover
             for idx in range(self.genePoolSize):
@@ -135,7 +135,6 @@ class GeneAlgorithm():
             crossoverIndex = self.getRandomIndex(self.steelArgs['totalPanelNum'] - 1, 1)
         crossoverIndex.sort()
 
-
         if method == 'onePoint':
             for changeIndex in crossoverIndex:
                 chromosomeA_after[changeIndex] = chromosomeB_before[changeIndex]
@@ -146,7 +145,8 @@ class GeneAlgorithm():
             chromosomeB_after[crossoverIndex[0]: crossoverIndex[1]] = chromosomeA_before[crossoverIndex[0]: crossoverIndex[1]]
 
         if method == 'byPanel':
-            item = random.randint(0, 1)
+            item = 0
+            # item = random.randint(0, 1)
             aStartIndex = 7 * crossoverIndex[0]
             if item == 0:
                 # Paint method
@@ -174,12 +174,12 @@ class GeneAlgorithm():
             chromosomeAfter[mutationIndex[1]] = chromosomeBefore[mutationIndex[0]]
 
         if method == 'byPanel':
-            # item = 0
-            item = random.randint(0, 1)
-            changeIndex = random.randint(0, self.steelArgs['totalPanelNum'] - 1) * 7
+            item = 0
+            # item = random.randint(0, 1)
+            # changeIndex = random.randint(0, self.steelArgs['totalPanelNum'] - 1) * 7
+            changeIndex = self.Fitness.getAllPaintDistance(chromosomeBefore) * 7
             if item == 0:
                 # Paint method
-                changeIndex = self.Fitness.getAllPaintDistance(chromosomeBefore) * 7
                 chromosomeAfter[changeIndex: changeIndex + 3] = [char for char in '{0:03b}'.format(random.randint(0, 7))]
             elif item == 1:
                 # Panel method
