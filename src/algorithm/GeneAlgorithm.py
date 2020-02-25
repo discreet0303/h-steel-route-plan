@@ -1,5 +1,6 @@
 from src.algorithm.Fitness import Fitness
 from src.algorithm.Gene import Gene
+from src.model.HSteelModel import HSteelModel
 from src.utils.index import writeRecordToFile 
 
 import time, copy, random
@@ -26,6 +27,7 @@ class GeneAlgorithm():
             'paintHalfLineLength': 5,
             'totalPanelNum': 11
         }
+        self.HSteelModel = HSteelModel(self.steelArgs)
 
         # Init
         self.bestGene = None
@@ -52,6 +54,7 @@ class GeneAlgorithm():
             # Reproduction
             if times != 0:
                 genePoolTemp = []
+                if self.bestGene != None: genePoolTemp.append(self.bestGene) 
                 while len(genePoolTemp) < self.genePoolSize:
                     genePoolIndex = self.getRandomIndex(self.genePoolSize, 2)
 
@@ -171,14 +174,23 @@ class GeneAlgorithm():
             chromosomeAfter[mutationIndex[1]] = chromosomeBefore[mutationIndex[0]]
 
         if method == 'byPanel':
+            # item = 0
             item = random.randint(0, 1)
             changeIndex = random.randint(0, self.steelArgs['totalPanelNum'] - 1) * 7
             if item == 0:
                 # Paint method
+                changeIndex = self.Fitness.getAllPaintDistance(chromosomeBefore) * 7
                 chromosomeAfter[changeIndex: changeIndex + 3] = [char for char in '{0:03b}'.format(random.randint(0, 7))]
             elif item == 1:
                 # Panel method
-                chromosomeAfter[changeIndex + 3: changeIndex + 7] = [char for char in '{0:04b}'.format(random.randint(0, self.steelArgs['totalPanelNum'] - 1))]
+                if changeIndex == 0:
+                    chromosomeAfter[changeIndex + 3: changeIndex + 7] = [char for char in '{0:04b}'.format(random.randint(0, self.steelArgs['totalPanelNum'] - 1))]
+                else:
+                    changeIndex -= 7
+                    panelId = int(''.join(chromosomeAfter[changeIndex + 3: changeIndex + 7]), 2)
+                    panelIds = self.HSteelModel.getNeighboringPanel(panelId)
+                    random.shuffle(panelIds)
+                    chromosomeAfter[changeIndex + 3: changeIndex + 7] = [char for char in '{0:04b}'.format(panelIds[0])]
         
         gene.setChromosome(chromosomeAfter)
 
@@ -206,6 +218,8 @@ class GeneAlgorithm():
         # Each panel has 7 bits
         self.geneLength = self.steelArgs['totalPanelNum'] * 7
         self.genePool = [Gene(self.geneLength) for t in range(self.genePoolSize)]
+        for gene in self.genePool:
+            self.validChromosome(gene)
 
     def getRandomIndex(self, maxNum, total):
         idx = []

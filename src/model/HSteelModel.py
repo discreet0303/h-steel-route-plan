@@ -221,6 +221,23 @@ class HSteelModel():
 
         return panel[panelId]
 
+    def getNeighboringPanel(self, panelId):
+        panel = {
+            0: [1, 3, 4],
+            1: [0, 2, 3],
+            2: [1, 3, 4, 5],
+            3: [0, 1, 2, 4, 5],
+            4: [0, 2, 3, 5, 6, 8,10],
+            5: [2, 3, 4, 8, 10],
+            6: [4, 7, 9, 10],
+            7: [6, 8, 9, 10],
+            8: [4, 5, 7, 9, 10],
+            9: [6, 7, 8],
+            10: [4, 5, 6, 7, 8],
+        }
+
+        return panel[panelId]
+
     def hSteelInit(self):
         self.allPanelDetail = [{} for t in range(self.totalPanelNum)]
         
