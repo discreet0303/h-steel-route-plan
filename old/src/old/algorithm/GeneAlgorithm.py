@@ -74,6 +74,9 @@ class GeneAlgorithm():
                     val = int(random.random() * (self.genePoolSize - 1))
                     self.crossover(coMethod, self.genePool[idx], self.genePool[val])
 
+            # print('B==========================================')
+            # for idx, gene in enumerate(self.genePool):
+            #     print('idx: ', idx, 'Gene: ', self.Fitness.tranformChromosome(gene.getChromosome()))
             # Mutation
             for idx in range(self.genePoolSize):
                 if random.random() < self.mutationRate:

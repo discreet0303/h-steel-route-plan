@@ -1,0 +1,7 @@
+[
+    {"height": 100, "width": 50, "cThick": 5, "tbThick": 7, "radio": 8},
+    {"height": 100, "width": 100, "cThick": 6, "tbThick": 8, "radio": 8},
+    {"height": 175, "width": 90, "cThick": 5, "tbThick": 8, "radio": 8},
+    {"height": 175, "width": 175, "cThick": 7.5, "tbThick": 11, "radio": 13},
+    {"height": 350, "width": 175, "cThick": 7, "tbThick": 11, "radio": 13}
+]

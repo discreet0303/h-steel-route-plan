@@ -1,32 +1,45 @@
-from src.algorithm.GeneAlgorithm import GeneAlgorithm
+from src.modal.Stl import Stl
+from src.modal.Hsteel import Hsteel
+from src.algorithm.HsteelAnalysis import HsteelAnalysis
 
-import argparse, sys
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
-def main(args):
-    for i in range(args.running):
-        GeneAlgorithm(args)
+def getAllPosAssociation(allPosAttr):
+    posAttr = []
+
+    for item in allPosAttr:
+        for cThick in item[3]:
+            for tbThick in item[4]:
+                value = [item[0], item[1], item[2], cThick, tbThick]
+                posAttr.append(value)
+
+    return posAttr
+
+def main():
+    stlName = 'B1-3_Qty_1.stl'
+    stlPath = 'stl/' + stlName
+
+    # Stl Obj
+    stlObj = Stl()
+    posHsteelAttr = stlObj.getAllPossibleHsteelAttr(stlPath)
+    posHsteelAttr = getAllPosAssociation(posHsteelAttr)
+
+    # Hsteel Attr Analysis
+    hsteelAnalysis = HsteelAnalysis()
+    hsteelConfig = hsteelAnalysis.getMostSimilarConfig(posHsteelAttr)
+    print(hsteelConfig)
+
+    # Hsteel Painting
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    hsteelPaint = Hsteel(ax)
+    if len(hsteelConfig) == 1: 
+        hsteelPaint.startPaint3dModal(hsteelConfig[0], [3, 4, 10, 9], 5)
+        plt.show()
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--iteration', '-i', default=50, type=int)
-    parser.add_argument('--genesize', default=300, type=int)
-    parser.add_argument('--matingrate', default=0.6, type=float)
-    parser.add_argument('--mutationrate', default=0.4, type=float)
-    parser.add_argument('--crossover', default='byPanel', type=str)
-    parser.add_argument('--mutation', default='byPanel', type=str)
-    parser.add_argument('--running', '-n', default='50', type=int)
-
-    args = parser.parse_args()
-
-    coMethod = ['onePoint', 'twoPoint', 'byPanel']
-    muMethod = ['inversion', 'swap', 'byPanel']
-
-    if args.crossover not in coMethod:
-        print('Crossover method only for onePoint method')
-        sys.exit(0)
-    if args.mutation not in muMethod:
-        print('Mutation method only for inversion method')
-        sys.exit(0)
-
-    main(args)
+if __name__ == "__main__":
+    main()

@@ -42,17 +42,17 @@ def createHSteelModel3D(height, width, cThick, tbThick, radio, length):
         ax
     )
 
-    drawPanel(ax, 'bottom-right', 3)
-    drawPanel(ax, 'bottom-front', 3)
-    drawPanel(ax, 'bottom-left', 3)
+    # drawPanel(ax, 'bottom-right', 3)
+    # drawPanel(ax, 'bottom-front', 3)
+    # drawPanel(ax, 'bottom-left', 3)
     drawPanel(ax, 'bottom-top', 3)
     drawPanel(ax, 'center-front', 3)
     drawPanel(ax, 'top-bottom', 3)
 
-    drawPanel(ax, 'center-left', 3)
-    drawPanel(ax, 'top-front', 3)
-    drawPanel(ax, 'top-left', 3)
-    drawPanel(ax, 'top-right', 3)
+    # drawPanel(ax, 'center-left', 3)
+    # drawPanel(ax, 'top-front', 3)
+    # drawPanel(ax, 'top-left', 3)
+    # drawPanel(ax, 'top-right', 3)
     drawPanel(ax, 'top-top', 3)
 
     # drawPanel(ax, 'center-right', 3)
@@ -223,7 +223,7 @@ def drawPanel(ax, panelName, halfLineLength):
                 plt.pause(0.001)
 
     elif panelName == 'top-top':
-        drawLineIndex = getDrawLineIndex(0, (__HSTEEL_INFO['width'] - __HSTEEL_INFO['centerThickness']) / 2, halfLineLength)
+        drawLineIndex = getDrawLineIndex(0, __HSTEEL_INFO['width'], halfLineLength)
         for idx, lineIndex in enumerate(drawLineIndex):
             startForIndex = endForIndex = 0
             if idx % 2 == 0:
@@ -236,11 +236,11 @@ def drawPanel(ax, panelName, halfLineLength):
                 freq = -bigFreq
 
             for i in range(startForIndex, endForIndex, freq):
-                drawLine(ax, 'hor', 'ySide', [lineIndex, i, __HSTEEL_INFO['height']], halfLineLength, 'yellow')
+                drawLine(ax, 'hor', 'ySide', [lineIndex, i, __HSTEEL_INFO['height']], halfLineLength, 'blue')
                 plt.pause(0.001)
 
     elif panelName == 'top-bottom':
-        drawLineIndex = getDrawLineIndex(0, (__HSTEEL_INFO['width'] - __HSTEEL_INFO['centerThickness']) / 2, halfLineLength)
+        drawLineIndex = getDrawLineIndex((__HSTEEL_INFO['width'] - __HSTEEL_INFO['centerThickness']) / 2, 0, halfLineLength)
         for idx, lineIndex in enumerate(drawLineIndex):
             startForIndex = endForIndex = 0
             if idx % 2 == 0:
@@ -284,10 +284,12 @@ def getDrawLineIndex(startIndex, endIndex, halfLineLength):
     lineIndex = []
     lineNum = int(abs(startIndex - endIndex) / lineLength)
     for idx in range(lineNum):
-        lineIndex.append(startIndex + halfLineLength + 2 * idx * halfLineLength)
+        if startIndex < endIndex: lineIndex.append(startIndex + halfLineLength + idx * lineLength)
+        if startIndex > endIndex: lineIndex.append(startIndex - halfLineLength - idx * lineLength)
 
     if abs(startIndex - endIndex) % lineLength != 0:
-        lineIndex.append(endIndex - halfLineLength)
+        if startIndex < endIndex: lineIndex.append(endIndex - halfLineLength)
+        if startIndex > endIndex: lineIndex.append(endIndex + halfLineLength)
     
     return lineIndex
 

@@ -1,3 +1,5 @@
+import numpy as np
+
 class HSteelModel():
     def __init__(self, steelArgs):
         self.steelHeight = steelArgs['steelHeight']

@@ -1,2 +1,10 @@
 
 *.pyc
+
+doc/
+
+obj/
+
+stl/
+
+.vscode/
