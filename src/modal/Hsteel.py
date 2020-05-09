@@ -9,21 +9,20 @@ from matplotlib import cm
 class Hsteel:
     def __init__(self, ax):
         self.ax = ax
-        
+
         self.panelIdToName = {
-            0: 'bottom-front',
-            1: 'bottom-right',
-            2: 'bottom-left',
-            3: 'bottom-top',
-            4: 'center-front',
-            5: 'center-left',
-            6: 'top-front',
-            7: 'top-left',
-            8: 'top-right',
-            9: 'top-top',
-            10: 'top-bottom',
+            0: 'left-bottom-top',
+            1: 'left-center',
+            2: 'left-top-bottom',
+
+            3: 'right-bottom-top',
+            4: 'right-center',
+            5: 'right-top-bottom',
+
+            6: 'top-top',
+            7: 'bottom-bottom',
         }
-        
+
     def startPaint3dModal(self, hSteelConfig, paintPanelIds, halfLineLength):
         height = hSteelConfig['height']
         width = hSteelConfig['width']
@@ -33,214 +32,237 @@ class Hsteel:
         length = hSteelConfig['length']
 
         self.createHsteel3dModal(height, width, cThick, tbThick, radio, length, self.ax)
+        
+        lastEndSide = 'end'
+        for paintPanelId in paintPanelIds:
+            lastEndSide = self.drawPanel(paintPanelId, hSteelConfig, halfLineLength, lastEndSide)
 
-        for idx in paintPanelIds:
-            self.drawPanel(self.ax, self.panelIdToName[idx], hSteelConfig, halfLineLength)
-
-    # Draw
-    def drawPanel(self, ax, panelName, hSteelConfig, halfLineLength):
+    '''Simulation route'''
+    def drawPanel(self, paintPanelId, hSteelConfig, halfLineLength, lastEndSide):
+        ax = self.ax
+        panelName = self.panelIdToName[paintPanelId]
         hSteelHeight = hSteelConfig['height']
         hSteelWidth = hSteelConfig['width']
         hSteelCThick = hSteelConfig['cThick']
         hSteelTbThick = hSteelConfig['tbThick']
         hSteelLength = hSteelConfig['length']
 
-        bigFreq = 50
-        smallFreq = 5
-        # bottom panel
-        if panelName == 'bottom-front':
-            drawLineIndex = self.getDrawLineIndex(0, hSteelTbThick, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'ySide', [0, i, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'bottom-right':
-            drawLineIndex = self.getDrawLineIndex(0, hSteelTbThick, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = int(hSteelWidth / 2) + 1
-                    freq = smallFreq
-                elif idx % 2 == 1:
-                    startForIndex = int(hSteelWidth / 2)
-                    endForIndex = -1
-                    freq = -smallFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'xSide', [i, 0, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'bottom-left':
-            drawLineIndex = self.getDrawLineIndex(0, hSteelTbThick, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = int(hSteelWidth / 2) + 1
-                    freq = smallFreq
-                elif idx % 2 == 1:
-                    startForIndex = int(hSteelWidth / 2)
-                    endForIndex = -1
-                    freq = -smallFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'xSide', [i, hSteelLength, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'bottom-top':
+        pausTime = 100
+        startForIndex = endForIndex = 0
+        drawLineIndex = []
+        if panelName == 'left-bottom-top':
             drawLineIndex = self.getDrawLineIndex(0, (hSteelWidth - hSteelCThick) / 2, halfLineLength)
             for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
 
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
+                
                 for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'yellow')
-                    plt.pause(0.001)
+                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    if i % pausTime == 0: plt.pause(1e-7)
 
-        # center panel
-        elif panelName == 'center-front':
+        elif panelName == 'left-center':
             drawLineIndex = self.getDrawLineIndex(hSteelTbThick, (hSteelHeight - hSteelTbThick), halfLineLength)
             for idx, lineIndex in enumerate(drawLineIndex):
                 startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
 
                 for i in range(startForIndex, endForIndex, freq):
                     self.drawLine(ax, 'ver', 'ySide', [(hSteelWidth - hSteelCThick) / 2, i, lineIndex], halfLineLength, 'green')
-                    plt.pause(0.001)
-
-        elif panelName == 'center-left':
-            drawLineIndex = self.getDrawLineIndex(hSteelTbThick, (hSteelHeight - hSteelTbThick), halfLineLength)
+                    if i % pausTime == 0: plt.pause(1e-7)
+        
+        elif panelName == 'left-top-bottom':
+            drawLineIndex = self.getDrawLineIndex((hSteelWidth - hSteelCThick) / 2, 0, halfLineLength)
             for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                startPoint = int((hSteelWidth - hSteelCThick) / 2)
-                if idx % 2 == 0:
-                    startForIndex = startPoint
-                    endForIndex = startPoint + hSteelCThick + 1
-                    freq = smallFreq
-                elif idx % 2 == 1:
-                    startForIndex = startPoint + hSteelCThick
-                    endForIndex = startPoint - 1
-                    freq = -smallFreq
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
 
                 for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'ySide', [i, hSteelLength, lineIndex], halfLineLength, 'green')
-                    plt.pause(0.001)
-
-        # elif panelName == 'center-right':
-        #     for i in range(10, 90):
-        #         self.drawLine(ax, 'ver', 'zSide', [50, 0, i], cLen, 'green')
-        #         plt.pause(0.001)
-        # top panel
-        elif panelName == 'top-front':
-            drawLineIndex = self.getDrawLineIndex(hSteelHeight - hSteelTbThick, hSteelHeight, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'ySide', [0, i, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'top-right':
-            drawLineIndex = self.getDrawLineIndex(hSteelHeight - hSteelTbThick, hSteelHeight, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = int(hSteelWidth / 2) + 1
-                    freq = smallFreq
-                elif idx % 2 == 1:
-                    startForIndex = int(hSteelWidth / 2)
-                    endForIndex = -1
-                    freq = -smallFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'xSide', [i, 0, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'top-left':
-            drawLineIndex = self.getDrawLineIndex(hSteelHeight - hSteelTbThick, hSteelHeight, halfLineLength)
-            for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = int(hSteelWidth / 2) + 1
-                    freq = smallFreq
-                elif idx % 2 == 1:
-                    startForIndex = int(hSteelWidth / 2)
-                    endForIndex = -1
-                    freq = -smallFreq
-
-                for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'ver', 'xSide', [i, hSteelLength, lineIndex], halfLineLength, 'blue')
-                    plt.pause(0.001)
+                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    if i % pausTime == 0: plt.pause(1e-7)
 
         elif panelName == 'top-top':
             drawLineIndex = self.getDrawLineIndex(0, hSteelWidth, halfLineLength)
             for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
 
                 for i in range(startForIndex, endForIndex, freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight], halfLineLength, 'blue')
-                    plt.pause(0.001)
-
-        elif panelName == 'top-bottom':
-            drawLineIndex = self.getDrawLineIndex((hSteelWidth - hSteelCThick) / 2, 0, halfLineLength)
+                    if i % pausTime == 0: plt.pause(0.001)
+                    
+        elif panelName == 'right-bottom-top':
+            end = hSteelWidth - ((hSteelWidth - hSteelCThick) / 2)
+            drawLineIndex = self.getDrawLineIndex(hSteelWidth, end, halfLineLength)
             for idx, lineIndex in enumerate(drawLineIndex):
-                startForIndex = endForIndex = 0
-                if idx % 2 == 0:
-                    startForIndex = 0
-                    endForIndex = hSteelLength + 1
-                    freq = bigFreq
-                elif idx % 2 == 1:
-                    startForIndex = hSteelLength
-                    endForIndex = -1
-                    freq = -bigFreq
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
 
                 for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'yellow')
-                    plt.pause(0.001)
+                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    if i % pausTime == 0: plt.pause(1e-7)
+        
+        elif panelName == 'right-center':
+            drawLineIndex = self.getDrawLineIndex(hSteelTbThick, (hSteelHeight - hSteelTbThick), halfLineLength)
+            end = (hSteelWidth - hSteelCThick) / 2 + hSteelCThick
+            for idx, lineIndex in enumerate(drawLineIndex):
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
+
+                for i in range(startForIndex, endForIndex, freq):
+                    self.drawLine(ax, 'ver', 'ySide', [end, i, lineIndex], halfLineLength, 'green')
+                    if i % pausTime == 0: plt.pause(1e-7)
+        
+        elif panelName == 'right-top-bottom':
+            end = hSteelWidth - ((hSteelWidth - hSteelCThick) / 2)
+            drawLineIndex = self.getDrawLineIndex(end, hSteelWidth, halfLineLength)
+            for idx, lineIndex in enumerate(drawLineIndex):
+                if lastEndSide == 'front':
+                    if idx % 2 == 0:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+                    elif idx % 2 == 1:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                else:
+                    if idx % 2 == 0:
+                        startForIndex = hSteelLength
+                        endForIndex = -1
+                        freq = -1
+                    elif idx % 2 == 1:
+                        startForIndex = 0
+                        endForIndex = hSteelLength + 1
+                        freq = 1
+
+                startForIndex = int(startForIndex)
+                endForIndex = int(endForIndex)
+
+                for i in range(startForIndex, endForIndex, freq):
+                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    if i % pausTime == 0: plt.pause(1e-7)
+
+        if lastEndSide == 'front':
+            if len(drawLineIndex) % 2 == 0: return 'front'
+            else: return 'end'
+        else:
+            if len(drawLineIndex) % 2 == 0: return 'end'
+            else: return 'front'
 
     # draw line
     def drawLine(self, ax, panelSide, drawSide, centerPoint, lineLength, lineColor):
@@ -275,14 +297,14 @@ class Hsteel:
         if abs(startIndex - endIndex) % lineLength != 0:
             if startIndex < endIndex: lineIndex.append(endIndex - halfLineLength)
             if startIndex > endIndex: lineIndex.append(endIndex + halfLineLength)
-        
+
         return lineIndex
 
     # 3D Model each panel size
     def createHsteel3dModal(self, height, width, cThick, tbThick, radio, length, ax):
         kwargs = {'alpha': 1, 'color': 'red'}
         startX = startY = startZ = 0
-        
+
         # Hor Panel
         panelXX = [startX, startX, startX + width, startX + width, startX]
         panelYY = [startY, startY + length, startY + length, startY, startY]
@@ -313,4 +335,3 @@ class Hsteel:
         centerZ = [tbThick, tbThick, height - tbThick, height - tbThick, tbThick]
         ax.plot3D([centerPoint[0]] * 5, [centerPoint[1], centerPoint[1] + length, centerPoint[1] + length, centerPoint[1], centerPoint[1]], centerZ, **kwargs)
         ax.plot3D([centerPoint[0] + cThick] * 5, [centerPoint[1], centerPoint[1] + length, centerPoint[1] + length, centerPoint[1], centerPoint[1]], centerZ, **kwargs)
-        
