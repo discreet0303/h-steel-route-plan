@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 import math
 import argparse
@@ -23,29 +22,34 @@ class Hsteel:
             7: 'bottom-bottom',
         }
 
-    def startPaint3dModal(self, hSteelConfig, paintPanelIds, halfLineLength):
+    def startPaint3dModal(self, hSteelConfig, hSteelLength, paintPanelIds, halfLineLength):
         height = hSteelConfig['height']
         width = hSteelConfig['width']
         cThick = hSteelConfig['cThick']
         tbThick = hSteelConfig['tbThick']
         radio = hSteelConfig['radio']
-        length = hSteelConfig['length']
+        length = hSteelLength
 
         self.createHsteel3dModal(height, width, cThick, tbThick, radio, length, self.ax)
         
         lastEndSide = 'end'
+        paintPoints = []
         for paintPanelId in paintPanelIds:
-            lastEndSide = self.drawPanel(paintPanelId, hSteelConfig, halfLineLength, lastEndSide)
+            lastEndSide, paintPoint = self.drawPanel(paintPanelId, hSteelConfig, length, halfLineLength, lastEndSide)
+            paintPoints += paintPoint
+
+        return paintPoints
 
     '''Simulation route'''
-    def drawPanel(self, paintPanelId, hSteelConfig, halfLineLength, lastEndSide):
+    def drawPanel(self, paintPanelId, hSteelConfig, hSteelLength, halfLineLength, lastEndSide):
+        paintPoint = []
         ax = self.ax
         panelName = self.panelIdToName[paintPanelId]
         hSteelHeight = hSteelConfig['height']
         hSteelWidth = hSteelConfig['width']
         hSteelCThick = hSteelConfig['cThick']
         hSteelTbThick = hSteelConfig['tbThick']
-        hSteelLength = hSteelConfig['length']
+        hSteelLength = hSteelLength
 
         pausTime = 100
         startForIndex = endForIndex = 0
@@ -72,12 +76,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-                
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    paintPoint.append([lineIndex, i, hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([lineIndex, endForIndex, hSteelTbThick])
 
         elif panelName == 'left-center':
             drawLineIndex = self.getDrawLineIndex(hSteelTbThick, (hSteelHeight - hSteelTbThick), halfLineLength)
@@ -102,12 +105,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'ver', 'ySide', [(hSteelWidth - hSteelCThick) / 2, i, lineIndex], halfLineLength, 'green')
+                    paintPoint.append([(hSteelWidth - hSteelCThick) / 2, i, lineIndex])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([(hSteelWidth - hSteelCThick) / 2, endForIndex, lineIndex])
         
         elif panelName == 'left-top-bottom':
             drawLineIndex = self.getDrawLineIndex((hSteelWidth - hSteelCThick) / 2, 0, halfLineLength)
@@ -131,12 +133,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    paintPoint.append([lineIndex, i, hSteelHeight - hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([lineIndex, endForIndex, hSteelHeight - hSteelTbThick])
 
         elif panelName == 'top-top':
             drawLineIndex = self.getDrawLineIndex(0, hSteelWidth, halfLineLength)
@@ -160,12 +161,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight], halfLineLength, 'blue')
+                    paintPoint.append([lineIndex, i, hSteelHeight])
                     if i % pausTime == 0: plt.pause(0.001)
+                paintPoint.append([lineIndex, endForIndex, hSteelHeight])
                     
         elif panelName == 'right-bottom-top':
             end = hSteelWidth - ((hSteelWidth - hSteelCThick) / 2)
@@ -190,12 +190,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
                 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    paintPoint.append([lineIndex, i, hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([lineIndex, endForIndex, hSteelTbThick])
         
         elif panelName == 'right-center':
             drawLineIndex = self.getDrawLineIndex(hSteelTbThick, (hSteelHeight - hSteelTbThick), halfLineLength)
@@ -220,12 +219,11 @@ class Hsteel:
                         endForIndex = hSteelLength + 1
                         freq = 1
 
-                startForIndex = int(startForIndex)
-                endForIndex = int(endForIndex)
-
-                for i in range(startForIndex, endForIndex, freq):
+                for i in range(int(startForIndex), int(endForIndex), freq):
                     self.drawLine(ax, 'ver', 'ySide', [end, i, lineIndex], halfLineLength, 'green')
+                    paintPoint.append([end, i, lineIndex])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([end, endForIndex, lineIndex])
         
         elif panelName == 'right-top-bottom':
             end = hSteelWidth - ((hSteelWidth - hSteelCThick) / 2)
@@ -255,14 +253,16 @@ class Hsteel:
 
                 for i in range(startForIndex, endForIndex, freq):
                     self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    paintPoint.append([lineIndex, i, hSteelHeight - hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
+                paintPoint.append([lineIndex, endForIndex, hSteelHeight - hSteelTbThick])
 
         if lastEndSide == 'front':
-            if len(drawLineIndex) % 2 == 0: return 'front'
-            else: return 'end'
+            if len(drawLineIndex) % 2 == 0: return 'front', paintPoint
+            else: return 'end', paintPoint
         else:
-            if len(drawLineIndex) % 2 == 0: return 'end'
-            else: return 'front'
+            if len(drawLineIndex) % 2 == 0: return 'end', paintPoint
+            else: return 'front', paintPoint
 
     # draw line
     def drawLine(self, ax, panelSide, drawSide, centerPoint, lineLength, lineColor):

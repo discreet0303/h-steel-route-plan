@@ -7,6 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import argparse
 import csv
+import os
 from os import listdir
 from os.path import isfile, join
 
@@ -25,16 +26,17 @@ def main(args):
     stlName = args.name
     stlPath = 'stl/' + stlName
 
+    paintOrder = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6],
+        [7],
+    ]
+
     # Stl Obj
     stlObj = Stl()
     posHsteelAttr = stlObj.getAllPossibleHsteelAttr(stlPath)
-    for i in posHsteelAttr:
-        print(i)
     posHsteelAttr = getAllPosAssociation(posHsteelAttr)
-
-    # print('posHsteelAttr')
-    # for i in posHsteelAttr:
-    #     print(i)
 
     # Hsteel Attr Analysis
     hsteelAnalysis = HsteelAnalysis()
@@ -50,7 +52,21 @@ def main(args):
     if len(hsteelConfig) > 0:
         print('Similar Result....')
         print(hsteelConfig[0]['config'])
-        hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], args.paintOrder, args.paintLength)
+        
+        maxLength = 200
+
+        length = hsteelConfig[0]['config']['length']
+        paintPoints = []
+
+        lengthTimes = int(length / maxLength)
+        paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], maxLength, paintOrder[args.paintMode], args.paintLength)
+        for time in range(0, lengthTimes):
+            paintPoints += paintPoint
+        if length % maxLength != 0:
+            paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], length % maxLength, paintOrder[args.paintMode], args.paintLength)
+            paintPoints += paintPoint
+
+        writeRouteToFile(paintPoints)
         plt.show()
 
 def checkAllStlConfig():
@@ -81,7 +97,7 @@ def checkAllStlConfig():
                 similarConfig['config']['tbThick'],
             ]
         else:
-            record = [stlName,-1,-1,-1,-1,-1,-1,-1]
+            record = [stlName, -1, -1, -1, -1, -1, -1, -1]
         writeRecordToFile(record)
 
     print('Finished...')
@@ -93,15 +109,23 @@ def writeRecordToFile(args):
         data = [d for d in args]
         writer.writerow(data)
 
+def writeRouteToFile(route):
+    with open('./src/output/route.csv', 'a', newline='') as csvfile:
+        csvfile.truncate(0)
+        writer = csv.writer(csvfile)
+        for i in route:
+            writer.writerow(i)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', '-n', default='B1-3_Qty_1.stl', type=str)
-    parser.add_argument('--paintOrder', '-o', default='3, 4, 5, 6', type=str)
+    parser.add_argument('--name', '-n', default='H_100x50x5x7x8.stl', type=str)
+    parser.add_argument('--paintMode', '-m', default=0, type=int)
+    # parser.add_argument('--paintOrder', '-o', default='3', type=str)
     parser.add_argument('--paintLength', '-l', default=5, type=int)
     parser.add_argument('--runall', '-r', default=False, type=bool)
 
     args = parser.parse_args()
-    args.paintOrder = [int(panelId) for panelId in args.paintOrder.split(',')]
+    # args.paintOrder = [int(panelId) for panelId in args.paintOrder.split(',')]
     
     if args.runall: checkAllStlConfig()
     else: main(args)
