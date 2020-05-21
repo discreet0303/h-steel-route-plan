@@ -32,7 +32,7 @@ class Hsteel:
 
         self.createHsteel3dModal(height, width, cThick, tbThick, radio, length, self.ax)
         
-        lastEndSide = 'end'
+        lastEndSide = 'front'
         paintPoints = []
         for paintPanelId in paintPanelIds:
             lastEndSide, paintPoint = self.drawPanel(paintPanelId, hSteelConfig, length, halfLineLength, lastEndSide)

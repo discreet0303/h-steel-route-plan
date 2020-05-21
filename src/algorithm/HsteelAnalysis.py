@@ -14,6 +14,9 @@ class HsteelAnalysis:
         for posData in allPosData:
             for config in self.baseHsteelData:
                 configVal = [config['height'], config['width'], config['cThick'], config['tbThick']]
+                
+                if config['height'] > posData[1]: continue
+                if config['width'] > posData[2]: continue
 
                 dataSameNum = self.checkSameValueNum(posData, configVal)
 

@@ -8,8 +8,13 @@ from matplotlib import cm
 import argparse
 import csv
 import os
+import copy
 from os import listdir
 from os.path import isfile, join
+
+from stl import mesh
+import stl, numpy
+import time
 
 def getAllPosAssociation(allPosAttr):
     posAttr = []
@@ -61,13 +66,17 @@ def main(args):
         lengthTimes = int(length / maxLength)
         paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], maxLength, paintOrder[args.paintMode], args.paintLength)
         for time in range(0, lengthTimes):
-            paintPoints += paintPoint
+            for p in copy.deepcopy(paintPoint):
+                if p[1] != -1: p[1] += maxLength * time
+                paintPoints.append(p)
         if length % maxLength != 0:
             paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], length % maxLength, paintOrder[args.paintMode], args.paintLength)
-            paintPoints += paintPoint
+            for p in copy.deepcopy(paintPoint):
+                if p[1] != -1: p[1] += length - (length % maxLength)
+                paintPoints.append(p)
 
         writeRouteToFile(paintPoints)
-        plt.show()
+        # plt.show()
 
 def checkAllStlConfig():
     stlfiles = [f for f in listdir('stl') if isfile(join('stl', f))]
@@ -76,6 +85,7 @@ def checkAllStlConfig():
     stlObj = Stl()
     hsteelAnalysis = HsteelAnalysis()
     for stlName in stlfiles:
+        startTime = time.time()
         print('File ', stlName, ' is checking.....')
         stlPath = 'stl/' + stlName
 
@@ -95,9 +105,10 @@ def checkAllStlConfig():
                 similarConfig['config']['width'],
                 similarConfig['config']['cThick'],
                 similarConfig['config']['tbThick'],
+                (time.time() - startTime)
             ]
         else:
-            record = [stlName, -1, -1, -1, -1, -1, -1, -1]
+            record = [stlName, -1, -1, -1, -1, -1, -1, -1, -1]
         writeRecordToFile(record)
 
     print('Finished...')
@@ -114,18 +125,17 @@ def writeRouteToFile(route):
         csvfile.truncate(0)
         writer = csv.writer(csvfile)
         for i in route:
+            if i[1] == -1: continue
             writer.writerow(i)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', '-n', default='H_100x50x5x7x8.stl', type=str)
+    parser.add_argument('--name', '-n', default='a.stl', type=str)
     parser.add_argument('--paintMode', '-m', default=0, type=int)
-    # parser.add_argument('--paintOrder', '-o', default='3', type=str)
     parser.add_argument('--paintLength', '-l', default=5, type=int)
     parser.add_argument('--runall', '-r', default=False, type=bool)
 
     args = parser.parse_args()
-    # args.paintOrder = [int(panelId) for panelId in args.paintOrder.split(',')]
     
     if args.runall: checkAllStlConfig()
     else: main(args)
