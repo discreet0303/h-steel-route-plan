@@ -51,7 +51,7 @@ class Hsteel:
         hSteelTbThick = hSteelConfig['tbThick']
         hSteelLength = hSteelLength
 
-        pausTime = 100
+        pausTime = 180
         startForIndex = endForIndex = 0
         drawLineIndex = []
         if panelName == 'left-bottom-top':
@@ -77,7 +77,8 @@ class Hsteel:
                         freq = 1
 
                 for i in range(int(startForIndex), int(endForIndex), freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    if halfLineLength > (hSteelWidth - hSteelCThick) / 2: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], (hSteelWidth - hSteelCThick) / 2, 'orange')
+                    else: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
                     paintPoint.append([lineIndex, i, hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
                 paintPoint.append([lineIndex, endForIndex, hSteelTbThick])
@@ -134,7 +135,8 @@ class Hsteel:
                         freq = 1
 
                 for i in range(int(startForIndex), int(endForIndex), freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    if halfLineLength > (hSteelWidth - hSteelCThick) / 2: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], (hSteelWidth - hSteelCThick) / 2, 'orange') 
+                    else: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
                     paintPoint.append([lineIndex, i, hSteelHeight - hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
                 paintPoint.append([lineIndex, endForIndex, hSteelHeight - hSteelTbThick])
@@ -191,7 +193,8 @@ class Hsteel:
                         freq = 1
                 
                 for i in range(int(startForIndex), int(endForIndex), freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
+                    if halfLineLength > (hSteelWidth - hSteelCThick) / 2: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], (hSteelWidth - hSteelCThick) / 2, 'orange')
+                    else: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelTbThick], halfLineLength, 'orange')
                     paintPoint.append([lineIndex, i, hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
                 paintPoint.append([lineIndex, endForIndex, hSteelTbThick])
@@ -252,7 +255,8 @@ class Hsteel:
                 endForIndex = int(endForIndex)
 
                 for i in range(startForIndex, endForIndex, freq):
-                    self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
+                    if halfLineLength > (hSteelWidth - hSteelCThick) / 2: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], (hSteelWidth - hSteelCThick) / 2, 'orange')
+                    else: self.drawLine(ax, 'hor', 'ySide', [lineIndex, i, hSteelHeight - hSteelTbThick], halfLineLength, 'orange')
                     paintPoint.append([lineIndex, i, hSteelHeight - hSteelTbThick])
                     if i % pausTime == 0: plt.pause(1e-7)
                 paintPoint.append([lineIndex, endForIndex, hSteelHeight - hSteelTbThick])
@@ -288,6 +292,7 @@ class Hsteel:
 
     def getDrawLineIndex(self, startIndex, endIndex, halfLineLength):
         lineLength = halfLineLength * 2
+        if abs(endIndex - startIndex) < lineLength: return [int((startIndex + endIndex) / 2)]
         lineIndex = []
         lineNum = int(abs(startIndex - endIndex) / lineLength)
         for idx in range(lineNum):

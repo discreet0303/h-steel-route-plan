@@ -58,13 +58,13 @@ def main(args):
         print('Similar Result....')
         print(hsteelConfig[0]['config'])
         
-        maxLength = 200
+        maxLength = 2000
 
         length = hsteelConfig[0]['config']['length']
         paintPoints = []
-
+        # if length < maxLength: maxLength = length
+        paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], length, paintOrder[args.paintMode], args.paintLength)
         lengthTimes = int(length / maxLength)
-        paintPoint = hsteelPaint.startPaint3dModal(hsteelConfig[0]['config'], maxLength, paintOrder[args.paintMode], args.paintLength)
         for time in range(0, lengthTimes):
             for p in copy.deepcopy(paintPoint):
                 if p[1] != -1: p[1] += maxLength * time
@@ -76,7 +76,7 @@ def main(args):
                 paintPoints.append(p)
 
         writeRouteToFile(paintPoints)
-        # plt.show()
+        plt.show()
 
 def checkAllStlConfig():
     stlfiles = [f for f in listdir('stl') if isfile(join('stl', f))]
@@ -130,9 +130,9 @@ def writeRouteToFile(route):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', '-n', default='a.stl', type=str)
-    parser.add_argument('--paintMode', '-m', default=0, type=int)
-    parser.add_argument('--paintLength', '-l', default=5, type=int)
+    parser.add_argument('--name', '-n', default='H-900x300x14x28x2600.stl', type=str)
+    parser.add_argument('--paintMode', '-m', default=4, type=int)
+    parser.add_argument('--paintLength', '-l', default=125, type=int)
     parser.add_argument('--runall', '-r', default=False, type=bool)
 
     args = parser.parse_args()
